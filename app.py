@@ -22,252 +22,147 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Premium Professional UI Theme
+# Minimal Dark Theme - Gemini Style
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
     
-    /* Base styling */
+    /* Base - Clean dark background */
     .stApp {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #1a1a1a;
     }
     
-    /* Hide Streamlit branding */
-    #MainMenu, footer, header {visibility: hidden;}
-    .stDeployButton {display: none;}
+    /* Hide all Streamlit branding */
+    #MainMenu, footer, header, .stDeployButton {display: none !important; visibility: hidden !important;}
     
-    /* Main container */
+    /* Center content */
     .main .block-container {
-        max-width: 900px;
-        padding: 2rem 1.5rem;
+        max-width: 800px;
+        padding: 0 1rem;
         margin: 0 auto;
     }
     
-    /* Header styling */
-    .app-header {
+    /* Minimal greeting */
+    .greeting {
         text-align: center;
-        padding: 2rem 1rem;
-        margin-bottom: 1.5rem;
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
+        padding-top: 20vh;
+        margin-bottom: 2rem;
     }
     
-    .app-header h1 {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin: 0 0 0.5rem 0;
+    .greeting h1 {
+        color: #e8e8e8;
+        font-size: 2rem;
+        font-weight: 400;
+        margin: 0;
         letter-spacing: -0.5px;
     }
     
-    .app-header .subtitle {
-        color: #a0aec0;
-        font-size: 1rem;
-        margin: 0;
-        font-weight: 400;
+    .greeting .highlight {
+        background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     
-    .app-header .badge-row {
-        display: flex;
-        justify-content: center;
-        gap: 0.75rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
-    
-    .feature-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.4rem 0.8rem;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        font-size: 0.75rem;
-        color: #a0aec0;
-    }
-    
-    /* Trust Score Badges */
+    /* Trust badges */
     .trust-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.6rem 1.25rem;
-        border-radius: 25px;
-        font-weight: 600;
-        font-size: 1rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.9rem;
     }
     
-    .trust-high { 
-        background: linear-gradient(135deg, rgba(46, 160, 67, 0.2) 0%, rgba(46, 160, 67, 0.1) 100%); 
-        color: #4ade80; 
-        border: 1px solid rgba(46, 160, 67, 0.4);
-    }
-    .trust-medium { 
-        background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(234, 179, 8, 0.1) 100%); 
-        color: #fbbf24; 
-        border: 1px solid rgba(234, 179, 8, 0.4);
-    }
-    .trust-low { 
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%); 
-        color: #f87171; 
-        border: 1px solid rgba(239, 68, 68, 0.4);
-    }
+    .trust-high { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+    .trust-medium { background: rgba(234, 179, 8, 0.15); color: #fbbf24; }
+    .trust-low { background: rgba(239, 68, 68, 0.15); color: #f87171; }
     
-    /* Report sections with glassmorphism */
+    /* Report sections */
     .report-section {
-        background: rgba(30, 41, 59, 0.5);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        padding: 1.25rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-    }
-    
-    .report-section:hover {
-        border-color: rgba(255, 255, 255, 0.15);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        background: #252525;
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin: 0.75rem 0;
     }
     
     .report-section h4 {
-        color: #60a5fa;
-        margin: 0 0 1rem 0;
-        font-size: 1rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    
-    /* Skill indicators */
-    .skill-match { color: #4ade80; font-weight: 500; }
-    .skill-mismatch { color: #f87171; font-weight: 500; }
-    
-    /* Buttons */
-    .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 0.6rem 1.5rem;
-        border-radius: 10px;
-        font-weight: 600;
+        color: #a78bfa;
+        margin: 0 0 0.75rem 0;
         font-size: 0.9rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        font-weight: 500;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #333;
     }
     
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-    
-    /* File uploader */
+    /* Hide file uploader initially - show via expander */
     [data-testid="stFileUploader"] {
-        background: rgba(30, 41, 59, 0.5);
-        border: 2px dashed rgba(102, 126, 234, 0.4);
-        border-radius: 16px;
-        padding: 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    [data-testid="stFileUploader"]:hover {
-        border-color: rgba(102, 126, 234, 0.7);
-        background: rgba(30, 41, 59, 0.7);
-    }
-    
-    /* Chat messages */
-    [data-testid="stChatMessage"] {
-        background: rgba(30, 41, 59, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-    }
-    
-    /* Chat input */
-    [data-testid="stChatInput"] {
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #252525;
+        border: 1px solid #333;
         border-radius: 12px;
+        padding: 0.75rem;
+    }
+    
+    /* Chat messages - minimal */
+    [data-testid="stChatMessage"] {
+        background: transparent;
+        border: none;
+        padding: 0.75rem 0;
+    }
+    
+    /* Chat input - centered pill style */
+    [data-testid="stChatInput"] {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    
+    [data-testid="stChatInput"] > div {
+        background: #2a2a2a;
+        border: 1px solid #3a3a3a;
+        border-radius: 24px;
+        padding: 0.25rem 0.5rem;
     }
     
     [data-testid="stChatInput"] input {
         background: transparent;
-        color: white;
+        color: #e8e8e8;
+    }
+    
+    [data-testid="stChatInput"] button {
+        background: #8b5cf6;
+        border-radius: 50%;
     }
     
     /* Tables */
-    table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        margin: 0.75rem 0;
-    }
+    table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
+    th { background: #2a2a2a; color: #a78bfa; font-weight: 500; padding: 0.6rem; text-align: left; }
+    td { padding: 0.5rem 0.6rem; border-bottom: 1px solid #333; color: #d4d4d4; }
     
-    th {
-        background: rgba(102, 126, 234, 0.2);
-        color: #a5b4fc;
-        font-weight: 600;
-        padding: 0.75rem 1rem;
-        text-align: left;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
+    /* Text colors */
+    .stMarkdown { color: #d4d4d4; }
+    a { color: #a78bfa; text-decoration: none; }
+    a:hover { color: #c4b5fd; }
     
-    td {
-        padding: 0.6rem 1rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        color: #e2e8f0;
-    }
-    
-    tr:hover td {
-        background: rgba(255, 255, 255, 0.02);
-    }
-    
-    /* Stats counter */
-    .stats-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
+    /* Buttons - minimal */
+    .stButton > button {
+        background: #2a2a2a;
+        color: #e8e8e8;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
         padding: 0.5rem 1rem;
-        background: rgba(102, 126, 234, 0.15);
-        border: 1px solid rgba(102, 126, 234, 0.3);
-        border-radius: 10px;
-        color: #a5b4fc;
-        font-weight: 500;
-        font-size: 0.85rem;
+        font-weight: 400;
     }
     
-    /* Markdown text */
-    .stMarkdown {
-        color: #e2e8f0;
+    .stButton > button:hover {
+        background: #333;
+        border-color: #444;
     }
     
-    /* Links */
-    a {
-        color: #60a5fa;
-        text-decoration: none;
-    }
-    
-    a:hover {
-        color: #93c5fd;
-        text-decoration: underline;
-    }
-    
-    /* Spinner */
-    .stSpinner > div {
-        border-color: #667eea transparent transparent transparent;
+    /* Expander */
+    .streamlit-expanderHeader {
+        background: #252525;
+        border-radius: 8px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -851,37 +746,22 @@ I can help you verify candidates! Here's what to do:
 
 # ============ MAIN UI ============
 
-# Professional Header
-st.markdown("""
-<div class="app-header">
-    <h1>Resume Scanner AI</h1>
-    <p class="subtitle">Intelligent Resume Verification & Candidate Analysis</p>
-    <div class="badge-row">
-        <span class="feature-badge">Company Registry</span>
-        <span class="feature-badge">GitHub Analysis</span>
-        <span class="feature-badge">LinkedIn Verify</span>
-        <span class="feature-badge">Skill Match</span>
+# Show greeting only when no messages (like Gemini)
+if not st.session_state.messages:
+    st.markdown("""
+    <div class="greeting">
+        <h1>What can I help you with, <span class="highlight">today</span>?</h1>
     </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# Top controls row
-col1, col2, col3 = st.columns([1, 2, 1])
-with col1:
-    if st.button("Clear All", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.candidates = {}
-        st.session_state.processed_files = set()
-        st.rerun()
-with col3:
-    st.markdown(f'<div class="stats-badge">{len(st.session_state.candidates)} Candidates</div>', unsafe_allow_html=True)
-
-# File uploader
-uploaded_file = st.file_uploader(
-    "Upload Resume (PDF/DOCX)",
-    type=['pdf', 'docx'],
-    key="file_upload"
-)
+# File uploader in expander (hidden by default like Gemini's +)
+with st.expander("Upload Resume", expanded=False):
+    uploaded_file = st.file_uploader(
+        "PDF or DOCX",
+        type=['pdf', 'docx'],
+        key="file_upload",
+        label_visibility="collapsed"
+    )
 
 # Process file only if it's new
 if uploaded_file:
@@ -892,10 +772,10 @@ if uploaded_file:
         
         st.session_state.messages.append({
             "role": "user",
-            "content": f"📄 Uploaded: **{uploaded_file.name}**"
+            "content": f"Uploaded: **{uploaded_file.name}**"
         })
         
-        with st.spinner("Analyzing resume (this may take a moment for GitHub deep scan)..."):
+        with st.spinner("Analyzing..."):
             response = generate_response("", file_data=uploaded_file)
         
         st.session_state.messages.append({
@@ -904,39 +784,20 @@ if uploaded_file:
         })
         st.rerun()
 
-# Welcome message
-if not st.session_state.messages:
-    st.session_state.messages.append({
-        "role": "assistant",
-        "content": """
-**Welcome to Resume Scanner AI**
-
-I verify candidates using:
-- **Company Registries** — UK, US, India
-- **GitHub Analysis** — repos, languages, skill matching
-- **LinkedIn Verification**
-
-**Get started:**
-- Upload a resume above
-- Paste a GitHub link: `https://github.com/username`
-- Ask: "Should I hire this person?"
-"""
-    })
-
 # Display chat
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"], unsafe_allow_html=True)
 
 # Chat input
-if prompt := st.chat_input("Paste a link, ask a question..."):
+if prompt := st.chat_input("Ask anything..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     
-    with st.chat_message("user", avatar="👤"):
+    with st.chat_message("user"):
         st.markdown(prompt)
     
-    with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("Analyzing..."):
+    with st.chat_message("assistant"):
+        with st.spinner(""):
             response = generate_response(prompt)
         st.markdown(response, unsafe_allow_html=True)
     
