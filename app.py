@@ -144,20 +144,58 @@ st.markdown("""
     a { color: #a78bfa; text-decoration: none; }
     a:hover { color: #c4b5fd; }
     
-    /* Buttons - minimal */
-    .stButton > button {
+    /* Custom input area styling */
+    [data-testid="stFileUploader"] {
+        background: transparent;
+        border: none;
+        padding: 0;
+        min-height: 0;
+    }
+    
+    [data-testid="stFileUploader"] > div {
+        padding: 0;
+    }
+    
+    [data-testid="stFileUploader"] section {
+        padding: 0;
+    }
+    
+    [data-testid="stFileUploader"] section > button {
+        background: #3a3a3a;
+        color: #a78bfa;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+    }
+    
+    [data-testid="stTextInput"] input {
         background: #2a2a2a;
-        color: #e8e8e8;
         border: 1px solid #3a3a3a;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-        font-weight: 400;
+        border-radius: 24px;
+        padding: 0.75rem 1rem;
+        color: #e8e8e8;
+    }
+    
+    /* Send button */
+    .stButton > button {
+        background: #8b5cf6;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        font-size: 1.2rem;
     }
     
     .stButton > button:hover {
-        background: #333;
-        border-color: #444;
+        background: #7c3aed;
     }
+    
+    /* Hide hr */
+    hr { border-color: #333; }
     
     /* Expander */
     .streamlit-expanderHeader {
@@ -754,16 +792,35 @@ if not st.session_state.messages:
     </div>
     """, unsafe_allow_html=True)
 
-# File uploader in expander (hidden by default like Gemini's +)
-with st.expander("Upload Resume", expanded=False):
+# Display chat messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"], unsafe_allow_html=True)
+
+# Custom input area with file upload + text (like ChatGPT)
+st.markdown("---")
+input_col1, input_col2, input_col3 = st.columns([1, 10, 1])
+
+with input_col1:
     uploaded_file = st.file_uploader(
-        "PDF or DOCX",
+        "attach",
         type=['pdf', 'docx'],
         key="file_upload",
         label_visibility="collapsed"
     )
+    
+with input_col2:
+    prompt = st.text_input(
+        "message",
+        placeholder="Paste a link or ask a question...",
+        label_visibility="collapsed",
+        key="chat_input"
+    )
 
-# Process file only if it's new
+with input_col3:
+    send = st.button("→", key="send_btn")
+
+# Process uploaded file
 if uploaded_file:
     file_hash = get_file_hash(uploaded_file)
     
@@ -784,21 +841,20 @@ if uploaded_file:
         })
         st.rerun()
 
-# Display chat
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"], unsafe_allow_html=True)
-
-# Chat input
-if prompt := st.chat_input("Ask anything..."):
+# Process text input
+if send and prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    
-    with st.chat_message("assistant"):
-        with st.spinner(""):
-            response = generate_response(prompt)
-        st.markdown(response, unsafe_allow_html=True)
+    with st.spinner(""):
+        response = generate_response(prompt)
     
     st.session_state.messages.append({"role": "assistant", "content": response})
+    st.rerun()
+
+# Clear button in corner
+if st.session_state.messages:
+    if st.button("Clear"):
+        st.session_state.messages = []
+        st.session_state.candidates = {}
+        st.session_state.processed_files = set()
+        st.rerun()
