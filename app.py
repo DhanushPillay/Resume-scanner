@@ -17,104 +17,257 @@ load_dotenv()
 # Page Config
 st.set_page_config(
     page_title="Resume Scanner AI",
-    page_icon="🔍",
+    page_icon="✓",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Premium ChatGPT-Style CSS
+# Premium Professional UI Theme
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
+    /* Base styling */
     .stApp {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+        min-height: 100vh;
     }
     
+    /* Hide Streamlit branding */
     #MainMenu, footer, header {visibility: hidden;}
     .stDeployButton {display: none;}
     
+    /* Main container */
     .main .block-container {
-        max-width: 950px;
-        padding: 1.5rem 1rem;
+        max-width: 900px;
+        padding: 2rem 1.5rem;
         margin: 0 auto;
     }
     
-    .chat-header {
+    /* Header styling */
+    .app-header {
         text-align: center;
-        padding: 1rem;
-        margin-bottom: 0.5rem;
+        padding: 2rem 1rem;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
     }
     
-    .chat-header h1 {
+    .app-header h1 {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size: 2rem;
+        background-clip: text;
+        font-size: 2.5rem;
         font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        letter-spacing: -0.5px;
+    }
+    
+    .app-header .subtitle {
+        color: #a0aec0;
+        font-size: 1rem;
         margin: 0;
+        font-weight: 400;
     }
     
-    .chat-header p {
-        color: #8b949e;
-        margin: 0.3rem 0 0 0;
+    .app-header .badge-row {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .feature-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.8rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        font-size: 0.75rem;
+        color: #a0aec0;
+    }
+    
+    /* Trust Score Badges */
+    .trust-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.25rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .trust-high { 
+        background: linear-gradient(135deg, rgba(46, 160, 67, 0.2) 0%, rgba(46, 160, 67, 0.1) 100%); 
+        color: #4ade80; 
+        border: 1px solid rgba(46, 160, 67, 0.4);
+    }
+    .trust-medium { 
+        background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(234, 179, 8, 0.1) 100%); 
+        color: #fbbf24; 
+        border: 1px solid rgba(234, 179, 8, 0.4);
+    }
+    .trust-low { 
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%); 
+        color: #f87171; 
+        border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    
+    /* Report sections with glassmorphism */
+    .report-section {
+        background: rgba(30, 41, 59, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .report-section:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .report-section h4 {
+        color: #60a5fa;
+        margin: 0 0 1rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    /* Skill indicators */
+    .skill-match { color: #4ade80; font-weight: 500; }
+    .skill-mismatch { color: #f87171; font-weight: 500; }
+    
+    /* Buttons */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
         font-size: 0.9rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     }
     
-    .info-card {
-        background: #161b22;
-        border: 1px solid #30363d;
-        border-radius: 12px;
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* File uploader */
+    [data-testid="stFileUploader"] {
+        background: rgba(30, 41, 59, 0.5);
+        border: 2px dashed rgba(102, 126, 234, 0.4);
+        border-radius: 16px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stFileUploader"]:hover {
+        border-color: rgba(102, 126, 234, 0.7);
+        background: rgba(30, 41, 59, 0.7);
+    }
+    
+    /* Chat messages */
+    [data-testid="stChatMessage"] {
+        background: rgba(30, 41, 59, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
         padding: 1rem;
         margin: 0.5rem 0;
     }
     
-    .trust-badge {
-        display: inline-block;
-        padding: 0.4rem 1rem;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 1rem;
+    /* Chat input */
+    [data-testid="stChatInput"] {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
     }
     
-    .trust-high { background: rgba(46, 160, 67, 0.2); color: #3fb950; border: 1px solid #238636; }
-    .trust-medium { background: rgba(210, 153, 34, 0.2); color: #d29922; border: 1px solid #9e6a03; }
-    .trust-low { background: rgba(248, 81, 73, 0.2); color: #f85149; border: 1px solid #da3633; }
+    [data-testid="stChatInput"] input {
+        background: transparent;
+        color: white;
+    }
     
-    .report-section {
-        background: #21262d;
-        border: 1px solid #30363d;
-        border-radius: 8px;
-        padding: 1rem;
+    /* Tables */
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
         margin: 0.75rem 0;
     }
     
-    .report-section h4 {
-        color: #58a6ff;
-        margin: 0 0 0.75rem 0;
-        font-size: 1rem;
-        border-bottom: 1px solid #30363d;
-        padding-bottom: 0.5rem;
+    th {
+        background: rgba(102, 126, 234, 0.2);
+        color: #a5b4fc;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
     
-    .skill-match { color: #3fb950; }
-    .skill-mismatch { color: #f85149; }
+    td {
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+    }
     
-    .stButton > button {
-        background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
-        color: white;
-        border: none;
-        padding: 0.5rem 1.25rem;
-        border-radius: 8px;
+    tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    
+    /* Stats counter */
+    .stats-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(102, 126, 234, 0.15);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        border-radius: 10px;
+        color: #a5b4fc;
         font-weight: 500;
+        font-size: 0.85rem;
     }
     
-    [data-testid="stFileUploader"] {
-        background: #21262d;
-        border: 2px dashed #30363d;
-        border-radius: 12px;
-        padding: 0.75rem;
+    /* Markdown text */
+    .stMarkdown {
+        color: #e2e8f0;
+    }
+    
+    /* Links */
+    a {
+        color: #60a5fa;
+        text-decoration: none;
+    }
+    
+    a:hover {
+        color: #93c5fd;
+        text-decoration: underline;
+    }
+    
+    /* Spinner */
+    .stSpinner > div {
+        border-color: #667eea transparent transparent transparent;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -698,30 +851,36 @@ I can help you verify candidates! Here's what to do:
 
 # ============ MAIN UI ============
 
+# Professional Header
 st.markdown("""
-<div class="chat-header">
-    <h1>🔍 Resume Scanner AI</h1>
-    <p>Upload resumes, paste links, get hiring insights</p>
+<div class="app-header">
+    <h1>Resume Scanner AI</h1>
+    <p class="subtitle">Intelligent Resume Verification & Candidate Analysis</p>
+    <div class="badge-row">
+        <span class="feature-badge">Company Registry</span>
+        <span class="feature-badge">GitHub Analysis</span>
+        <span class="feature-badge">LinkedIn Verify</span>
+        <span class="feature-badge">Skill Match</span>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Top buttons
+# Top controls row
 col1, col2, col3 = st.columns([1, 2, 1])
 with col1:
-    if st.button("🗑️ Clear Chat"):
+    if st.button("Clear All", use_container_width=True):
         st.session_state.messages = []
         st.session_state.candidates = {}
         st.session_state.processed_files = set()
         st.rerun()
 with col3:
-    st.markdown(f"**{len(st.session_state.candidates)}** candidates")
+    st.markdown(f'<div class="stats-badge">{len(st.session_state.candidates)} Candidates</div>', unsafe_allow_html=True)
 
 # File uploader
 uploaded_file = st.file_uploader(
-    "📎 Drop resume here (PDF/DOCX)",
+    "Upload Resume (PDF/DOCX)",
     type=['pdf', 'docx'],
-    key="file_upload",
-    label_visibility="collapsed"
+    key="file_upload"
 )
 
 # Process file only if it's new
@@ -750,23 +909,23 @@ if not st.session_state.messages:
     st.session_state.messages.append({
         "role": "assistant",
         "content": """
-👋 **Welcome to Resume Scanner AI!**
+**Welcome to Resume Scanner AI**
 
 I verify candidates using:
-- 🏢 **Company Registries** (UK, US, India)
-- 💻 **GitHub Deep Scan** (repos, languages, skill matching)
-- 🔷 **LinkedIn Check**
+- **Company Registries** — UK, US, India
+- **GitHub Analysis** — repos, languages, skill matching
+- **LinkedIn Verification**
 
 **Get started:**
-- 📄 Upload a resume above
-- 🔗 Paste a GitHub link: `https://github.com/username`
-- ❓ Ask: "Should I hire this person?"
+- Upload a resume above
+- Paste a GitHub link: `https://github.com/username`
+- Ask: "Should I hire this person?"
 """
     })
 
 # Display chat
 for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="🤖" if message["role"] == "assistant" else "👤"):
+    with st.chat_message(message["role"]):
         st.markdown(message["content"], unsafe_allow_html=True)
 
 # Chat input
