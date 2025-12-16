@@ -31,8 +31,6 @@ cp .env.example .env
 python api.py
 ```
 
-Open http://localhost:5000
-
 ## Deployment (Render)
 
 1. Push to GitHub
