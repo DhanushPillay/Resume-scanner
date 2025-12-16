@@ -8,7 +8,9 @@ from flask_cors import CORS
 import os
 import tempfile
 import hashlib
+import json
 from dotenv import load_dotenv
+from groq import Groq
 
 from src.parser import ResumeParser
 from src.company_validator import CompanyValidator
@@ -27,8 +29,12 @@ company_validator = CompanyValidator(opencorporates_api_token=os.getenv("OPENCOR
 candidate_validator = CandidateValidator(github_token=os.getenv("GITHUB_TOKEN"))
 risk_engine = RiskEngine()
 
-# In-memory storage for candidates
+# Initialize Groq AI
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+# In-memory storage
 candidates = {}
+chat_history = []
 
 def get_file_hash(file_content):
     """Generate hash for file content."""
@@ -96,6 +102,59 @@ def analyze_resume(file_content, filename):
         
     finally:
         os.unlink(tmp_path)
+
+def get_ai_response(user_message):
+    """Use Groq AI to generate intelligent responses for HR."""
+    # Build context from candidates
+    candidates_context = ""
+    if candidates:
+        for name, data in candidates.items():
+            parsed = data['parsed_data']
+            risk = data['risk_analysis']
+            candidates_context += f"""
+Candidate: {name}
+- Trust Score: {risk['trust_score']}/100
+- Risk Level: {risk['risk_level']['level']}
+- Skills: {', '.join(parsed.get('skills', [])[:10])}
+- Experience: {parsed.get('total_experience', {}).get('experience_text', 'Unknown')}
+- Email: {parsed.get('email', 'N/A')}
+"""
+            gh = data['candidate_verification'].get('github', {})
+            if gh and gh.get('valid'):
+                candidates_context += f"- GitHub: @{gh.get('username')} ({gh.get('public_repos', 0)} repos)\n"
+    
+    system_prompt = f"""You are an AI HR assistant for Resume Scanner. You help HR professionals analyze candidates and make hiring decisions.
+
+Current analyzed candidates:
+{candidates_context if candidates_context else "No candidates analyzed yet."}
+
+Your capabilities:
+- Analyze and compare candidates
+- Provide hiring recommendations
+- Answer questions about candidate skills, experience, risk scores
+- Explain risk flags and trust scores
+- Help with interview questions
+
+Be concise, professional, and helpful. Format responses in HTML for display."""
+
+    try:
+        chat_history.append({"role": "user", "content": user_message})
+        
+        messages = [{"role": "system", "content": system_prompt}] + chat_history[-10:]
+        
+        response = groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=messages,
+            max_tokens=1000,
+            temperature=0.7
+        )
+        
+        ai_response = response.choices[0].message.content
+        chat_history.append({"role": "assistant", "content": ai_response})
+        
+        return ai_response
+    except Exception as e:
+        return f"<p>AI is currently unavailable. Error: {str(e)}</p>"
 
 def format_response(result):
     """Format analysis result as HTML."""
@@ -213,14 +272,14 @@ def analyze():
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    """Handle chat messages."""
+    """Handle chat messages with AI."""
     data = request.json
     message = data.get('message', '').strip()
     
     if not message:
         return jsonify({'error': 'No message provided'}), 400
     
-    # Check for GitHub/LinkedIn links
+    # Check for GitHub/LinkedIn links first
     import re
     github_match = re.search(r'github\.com/([a-zA-Z0-9_-]+)', message)
     linkedin_match = re.search(r'linkedin\.com/in/([a-zA-Z0-9_-]+)', message)
@@ -251,17 +310,9 @@ def chat():
         status = "Accessible" if result.get('valid') else "Not accessible"
         response_html = f"<p><strong>LinkedIn:</strong> {status}</p>"
     
-    elif candidates:
-        # Check if asking about a candidate
-        for name, data in candidates.items():
-            if name.lower() in message.lower():
-                response_html = format_response(data)
-                break
-        
-        if not response_html:
-            response_html = "<p>I can help you analyze resumes. Upload a PDF/DOCX or paste a GitHub/LinkedIn link.</p>"
     else:
-        response_html = "<p>Welcome! Upload a resume or paste a GitHub/LinkedIn link to get started.</p>"
+        # Use AI for all other messages
+        response_html = get_ai_response(message)
     
     return jsonify({'html': response_html})
 
