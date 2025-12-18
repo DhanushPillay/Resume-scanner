@@ -13,6 +13,7 @@ PyMuPDF>=1.23.0
 
 # NLP & Entity Extraction
 spacy>=3.7.0
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
 
 # HTTP Requests & Verification
 requests>=2.31.0
