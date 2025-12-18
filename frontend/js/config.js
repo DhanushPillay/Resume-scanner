@@ -4,14 +4,13 @@
  * IMPORTANT: Update API_BASE_URL to your deployed backend URL
  * 
  * Examples:
- * - Railway: https://resume-scanner-production.up.railway.app
- * - Render: https://resume-scanner.onrender.com
+ * - Render: https://resume-scanner-api.onrender.com
  * - Local: http://localhost:5000
  */
 
 const CONFIG = {
-    // ⚠️ CHANGE THIS to your Railway/Render backend URL
-    API_BASE_URL: 'https://your-backend-url.railway.app',
+    // ⚠️ CHANGE THIS to your Render backend URL
+    API_BASE_URL: 'https://resume-scanner-api.onrender.com',
 
     // API Endpoints (don't change these)
     ENDPOINTS: {
@@ -44,7 +43,7 @@ function isLocalDev() {
 }
 
 // Auto-detect API URL for local development
-if (isLocalDev() && CONFIG.API_BASE_URL.includes('your-backend-url')) {
+if (isLocalDev() && CONFIG.API_BASE_URL.includes('onrender.com')) {
     CONFIG.API_BASE_URL = 'http://localhost:5000';
     console.log('Development mode: Using local API at', CONFIG.API_BASE_URL);
 }

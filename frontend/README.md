@@ -22,8 +22,8 @@ Edit `js/config.js` and update `API_BASE_URL` to your deployed backend:
 
 ```javascript
 const CONFIG = {
-    // Change this to your Railway/Render URL
-    API_BASE_URL: 'https://resume-scanner-production.up.railway.app',
+    // Change this to your Render URL
+    API_BASE_URL: 'https://resume-scanner-api.onrender.com',
     ...
 };
 ```
@@ -50,7 +50,7 @@ Just open `index.html` in a browser (for testing)
 
 ## 🔧 Backend Requirements
 
-Your backend (Railway/Render) must:
+Your backend (Render) must:
 
 1. **Have CORS enabled** (already configured in `api.py`)
 2. **Expose these endpoints:**
@@ -78,7 +78,7 @@ Your backend (Railway/Render) must:
                             ▼
 ┌─────────────────────────────────────────────────────────┐
 │                    BACKEND API                           │
-│              (Railway / Render)                          │
+│                     (Render)                             │
 │                                                          │
 │   Flask + Gunicorn                                       │
 │   /api/analyze  - Resume parsing & verification         │
