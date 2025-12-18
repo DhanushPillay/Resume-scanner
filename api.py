@@ -329,5 +329,14 @@ def get_candidates():
         ]
     })
 
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Health check endpoint for frontend connection status."""
+    return jsonify({
+        'status': 'ok',
+        'service': 'resume-scanner-api',
+        'candidates_analyzed': len(candidates)
+    })
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
