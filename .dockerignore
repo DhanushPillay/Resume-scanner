@@ -1,0 +1,20 @@
+# Ignore files that shouldn't be in the Docker image
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.gitignore
+.env
+.venv/
+venv/
+env/
+*.md
+.vscode/
+.idea/
+frontend/
+*.log
+.DS_Store
+Thumbs.db
+railway.json
+render.yaml

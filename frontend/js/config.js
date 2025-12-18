@@ -4,13 +4,13 @@
  * IMPORTANT: Update API_BASE_URL to your deployed backend URL
  * 
  * Examples:
- * - Render: https://resume-scanner-api.onrender.com
+ * - Fly.io: https://resume-scanner-api.fly.dev
  * - Local: http://localhost:5000
  */
 
 const CONFIG = {
-    // ⚠️ CHANGE THIS to your Render backend URL
-    API_BASE_URL: 'https://resume-scanner-api.onrender.com',
+    // ⚠️ CHANGE THIS to your Fly.io backend URL
+    API_BASE_URL: 'https://resume-scanner-api.fly.dev',
 
     // API Endpoints (don't change these)
     ENDPOINTS: {
@@ -43,7 +43,7 @@ function isLocalDev() {
 }
 
 // Auto-detect API URL for local development
-if (isLocalDev() && CONFIG.API_BASE_URL.includes('onrender.com')) {
+if (isLocalDev() && CONFIG.API_BASE_URL.includes('fly.dev')) {
     CONFIG.API_BASE_URL = 'http://localhost:5000';
     console.log('Development mode: Using local API at', CONFIG.API_BASE_URL);
 }
