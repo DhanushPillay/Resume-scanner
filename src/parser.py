@@ -6,12 +6,19 @@ from dateutil import parser as date_parser
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-# Load Spacy model
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    print("Spacy model 'en_core_web_sm' not found. Please run: python -m spacy download en_core_web_sm")
-    nlp = None
+# Lazy load Spacy model (to prevent import-time failures on deployment)
+_nlp = None
+
+def get_nlp():
+    """Lazy load spaCy model on first use."""
+    global _nlp
+    if _nlp is None:
+        try:
+            _nlp = spacy.load("en_core_web_sm")
+        except OSError:
+            print("Spacy model 'en_core_web_sm' not found. Run: python -m spacy download en_core_web_sm")
+            _nlp = False  # Mark as failed so we don't retry
+    return _nlp if _nlp else None
 
 # Common job titles for better detection
 JOB_TITLES = [
@@ -268,6 +275,7 @@ class ResumeParser:
         if doc:
             # Only check entities in the first ~500 characters
             first_part = text[:500] if len(text) > 500 else text
+            nlp = get_nlp()
             first_doc = nlp(first_part) if nlp else None
             
             if first_doc:
@@ -446,6 +454,7 @@ class ResumeParser:
         # STEP 3: Use Spacy NER only within experience section, and only for ORGs near dates
         if doc and len(companies) < 5:  # Only if we haven't found enough
             # Process just the experience section with spacy
+            nlp = get_nlp()
             exp_doc = nlp(experience_section[:3000]) if nlp and experience_section else None
             
             if exp_doc:
@@ -549,6 +558,7 @@ class ResumeParser:
                         education.append(entry)
         
         # Try to find universities/colleges using Spacy
+        nlp = get_nlp()
         if nlp:
             doc = nlp(edu_text[:2000])  # Limit to first 2000 chars of edu section
             for ent in doc.ents:
@@ -677,6 +687,7 @@ class ResumeParser:
         cleaned_text = self.clean_text(text)
         
         # Process with Spacy
+        nlp = get_nlp()
         doc = nlp(cleaned_text) if nlp else None
         
         # Extract all entities
