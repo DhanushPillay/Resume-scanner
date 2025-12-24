@@ -10,7 +10,7 @@ import tempfile
 import hashlib
 import json
 from dotenv import load_dotenv
-from groq import Groq
+import google.generativeai as genai
 
 from src.parser import ResumeParser
 from src.company_validator import CompanyValidator
@@ -29,13 +29,15 @@ company_validator = CompanyValidator(opencorporates_api_token=os.getenv("OPENCOR
 candidate_validator = CandidateValidator(github_token=os.getenv("GITHUB_TOKEN"))
 risk_engine = RiskEngine()
 
-# Initialize Groq AI
-api_key = os.getenv("GROQ_API_KEY")
-if api_key:
-    groq_client = Groq(api_key=api_key)
+# Initialize Google Gemini
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+if gemini_api_key:
+    genai.configure(api_key=gemini_api_key)
+    # Using the latest Gemini model
+    model = genai.GenerativeModel('gemini-1.5-flash')
 else:
-    groq_client = None
-    print("Warning: GROQ_API_KEY not found. AI chat features will be disabled.")
+    model = None
+    print("Warning: GEMINI_API_KEY not found. AI chat features will be disabled.")
 
 # In-memory storage
 candidates = {}
@@ -109,7 +111,10 @@ def analyze_resume(file_content, filename):
         os.unlink(tmp_path)
 
 def get_ai_response(user_message):
-    """Use Groq AI to generate intelligent responses for HR."""
+    """Use Google Gemini to generate intelligent responses for HR."""
+    if not model:
+        return "<p>AI Chat is disabled. Please add GEMINI_API_KEY to your .env file.</p>"
+        
     # Build context from candidates
     candidates_context = ""
     if candidates:
@@ -140,27 +145,25 @@ Your capabilities:
 - Explain risk flags and trust scores
 - Help with interview questions
 
-Be concise, professional, and helpful. Format responses in HTML for display."""
+User Message: {user_message}
 
-    if not groq_client:
-        return "<p>AI Chat is disabled. Please add GROQ_API_KEY to your .env file.</p>"
+Be concise, professional, and helpful. Format responses in HTML for display (use <p>, <ul>, <li>, <strong> etc). Do not use markdown blocks."""
 
     try:
+        # History is managed by the client mostly, but here we just do single turn for simplicity with context
+        # Gemini handles context window well
+        response = model.generate_content(system_prompt)
+        ai_response = response.text
+        
+        # Simple markdown to HTML conversion if Gemini returns markdown (it likely will)
+        import markdown
+        ai_response_html = markdown.markdown(ai_response)
+        
+        # Store for session history (server-side log only)
         chat_history.append({"role": "user", "content": user_message})
+        chat_history.append({"role": "assistant", "content": ai_response_html})
         
-        messages = [{"role": "system", "content": system_prompt}] + chat_history[-10:]
-        
-        response = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=messages,
-            max_tokens=1000,
-            temperature=0.7
-        )
-        
-        ai_response = response.choices[0].message.content
-        chat_history.append({"role": "assistant", "content": ai_response})
-        
-        return ai_response
+        return ai_response_html
     except Exception as e:
         return f"<p>AI is currently unavailable. Error: {str(e)}</p>"
 
