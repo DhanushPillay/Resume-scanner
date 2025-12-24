@@ -30,7 +30,12 @@ candidate_validator = CandidateValidator(github_token=os.getenv("GITHUB_TOKEN"))
 risk_engine = RiskEngine()
 
 # Initialize Groq AI
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+api_key = os.getenv("GROQ_API_KEY")
+if api_key:
+    groq_client = Groq(api_key=api_key)
+else:
+    groq_client = None
+    print("Warning: GROQ_API_KEY not found. AI chat features will be disabled.")
 
 # In-memory storage
 candidates = {}
@@ -136,6 +141,9 @@ Your capabilities:
 - Help with interview questions
 
 Be concise, professional, and helpful. Format responses in HTML for display."""
+
+    if not groq_client:
+        return "<p>AI Chat is disabled. Please add GROQ_API_KEY to your .env file.</p>"
 
     try:
         chat_history.append({"role": "user", "content": user_message})
