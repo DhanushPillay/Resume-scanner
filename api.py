@@ -10,7 +10,7 @@ import tempfile
 import hashlib
 import json
 from dotenv import load_dotenv
-import google.generativeai as genai
+from groq import Groq
 
 from src.parser import ResumeParser
 from src.company_validator import CompanyValidator
@@ -29,15 +29,13 @@ company_validator = CompanyValidator(opencorporates_api_token=os.getenv("OPENCOR
 candidate_validator = CandidateValidator(github_token=os.getenv("GITHUB_TOKEN"))
 risk_engine = RiskEngine()
 
-# Initialize Google Gemini
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-if gemini_api_key:
-    genai.configure(api_key=gemini_api_key)
-    # Using the latest Gemini model
-    model = genai.GenerativeModel('gemini-1.5-flash')
+# Initialize Groq client
+groq_api_key = os.getenv("GROQ_API_KEY")
+if groq_api_key:
+    groq_client = Groq(api_key=groq_api_key)
 else:
-    model = None
-    print("Warning: GEMINI_API_KEY not found. AI chat features will be disabled.")
+    groq_client = None
+    print("Warning: GROQ_API_KEY not found. AI chat features will be disabled.")
 
 # In-memory storage
 candidates = {}
@@ -111,9 +109,9 @@ def analyze_resume(file_content, filename):
         os.unlink(tmp_path)
 
 def get_ai_response(user_message):
-    """Use Google Gemini to generate intelligent responses for HR."""
-    if not model:
-        return "<p>AI Chat is disabled. Please add GEMINI_API_KEY to your .env file.</p>"
+    """Use Groq with Llama 3.3 70B to generate intelligent responses for HR."""
+    if not groq_client:
+        return "<p>AI Chat is disabled. Please add GROQ_API_KEY to your .env file.</p>"
         
     # Build context from candidates
     candidates_context = ""
@@ -132,8 +130,21 @@ Candidate: {name}
             gh = data['candidate_verification'].get('github', {})
             if gh and gh.get('valid'):
                 candidates_context += f"- GitHub: @{gh.get('username')} ({gh.get('public_repos', 0)} repos)\n"
+                candidates_context += f"- Top Languages: {', '.join(gh.get('top_languages', [])[:5])}\n"
+                
+                # Include repository names and details
+                repos_details = gh.get('repos_details', [])
+                if repos_details:
+                    candidates_context += "- Repositories:\n"
+                    for repo in repos_details:
+                        repo_name = repo.get('name', 'Unknown')
+                        repo_lang = repo.get('language', 'N/A')
+                        repo_stars = repo.get('stars', 0)
+                        repo_desc = repo.get('description', '')[:50] if repo.get('description') else 'No description'
+                        is_fork = " (forked)" if repo.get('is_fork') else ""
+                        candidates_context += f"  * {repo_name} [{repo_lang}] ⭐{repo_stars}{is_fork} - {repo_desc}\n"
     
-    system_prompt = f"""You are an AI HR assistant for Resume Scanner. You help HR professionals analyze candidates and make hiring decisions.
+    system_message = f"""You are an AI HR assistant for Resume Scanner. You help HR professionals analyze candidates and make hiring decisions.
 
 Current analyzed candidates:
 {candidates_context if candidates_context else "No candidates analyzed yet."}
@@ -145,17 +156,24 @@ Your capabilities:
 - Explain risk flags and trust scores
 - Help with interview questions
 
-User Message: {user_message}
-
 Be concise, professional, and helpful. Format responses in HTML for display (use <p>, <ul>, <li>, <strong> etc). Do not use markdown blocks."""
 
     try:
-        # History is managed by the client mostly, but here we just do single turn for simplicity with context
-        # Gemini handles context window well
-        response = model.generate_content(system_prompt)
-        ai_response = response.text
+        # Using Groq with Llama 3.3 70B model
+        completion = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.7,
+            max_completion_tokens=1024,
+            top_p=1,
+        )
         
-        # Simple markdown to HTML conversion if Gemini returns markdown (it likely will)
+        ai_response = completion.choices[0].message.content
+        
+        # Simple markdown to HTML conversion if model returns markdown
         import markdown
         ai_response_html = markdown.markdown(ai_response)
         
@@ -303,12 +321,42 @@ def chat():
         result = candidate_validator.verify_github(url, [])
         
         if result.get('valid'):
+            # Store GitHub data so AI can reference it later
+            candidates[f"GitHub: @{username}"] = {
+                'parsed_data': {
+                    'name': result.get('name') or f"@{username}",
+                    'email': 'N/A',
+                    'skills': result.get('top_languages', []),
+                    'total_experience': {'experience_text': 'GitHub Profile'}
+                },
+                'company_verifications': [],
+                'candidate_verification': {'github': result, 'linkedin': None},
+                'risk_analysis': {
+                    'trust_score': 70 if result.get('original_repos', 0) > 3 else 40,
+                    'risk_level': {'level': 'LOW' if result.get('original_repos', 0) > 3 else 'MEDIUM'},
+                    'risk_flags': result.get('hyper_inflation_flags', []),
+                    'summary': f"GitHub profile with {result.get('public_repos', 0)} repos"
+                }
+            }
+            
+            # Build repo list for display
+            repos_list = ""
+            repos_details = result.get('repos_details', [])
+            if repos_details:
+                repos_list = "<ul>"
+                for repo in repos_details:
+                    is_fork = " (forked)" if repo.get('is_fork') else ""
+                    desc = repo.get('description', 'No description')[:60] if repo.get('description') else 'No description'
+                    repos_list += f"<li><strong>{repo.get('name')}</strong> [{repo.get('language', 'N/A')}] ⭐{repo.get('stars', 0)}{is_fork}<br/><em>{desc}</em></li>"
+                repos_list += "</ul>"
+            
             response_html = f"""
             <div class="section">
                 <h3>GitHub Profile: @{result.get('username')}</h3>
                 <p><strong>Repos:</strong> {result.get('public_repos', 0)} ({result.get('original_repos', 0)} original)</p>
                 <p><strong>Account Age:</strong> {result.get('account_age_months', 0)} months</p>
                 <p><strong>Languages:</strong> {', '.join(result.get('top_languages', [])[:5]) or 'None'}</p>
+                {repos_list}
             </div>
             """
         else:
